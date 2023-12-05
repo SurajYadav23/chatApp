@@ -3,15 +3,15 @@ const Message = require("../models/messageModel");
 const User = require("../models/userModel");
 const Chat = require("../models/chatModel");
 
-//@description     Get all Messages
-//@route           GET /api/Message/:chatId
+//@description     Get all messages
+//@route           GET /api/message/:chatId
 //@access          Protected
 const allMessages = asyncHandler(async (req, res) => {
   try {
-    console.log(req.params.chatId);
     const messages = await Message.find({ chat: req.params.chatId })
       .populate("sender", "name pic email")
       .populate("chat");
+  
     res.json(messages);
   } catch (error) {
     res.status(400);
@@ -19,9 +19,9 @@ const allMessages = asyncHandler(async (req, res) => {
   }
 });
 
-//@description     Create New Message
-//@route           POST /api/Message/
-//@access          Protected
+//@description     Create new message
+//@route           POST /api/message/
+//@access          Protectedd 
 const sendMessage = asyncHandler(async (req, res) => {
   const { content, chatId } = req.body;
 
@@ -39,13 +39,15 @@ const sendMessage = asyncHandler(async (req, res) => {
 
   try {
     var message = await Message.create(newMessage);
-    console.log("message"+ message);
-    // message = await message.populate("sender", "name pic").execPopulate();
-    // message = await message.populate("chat").execPopulate();
-    // message = await User.populate(message, {
-    //   path: "chat.users",
-    //   select: "name pic email",
-    // });
+    // console.log("message"+ message);
+    message = await message.populate("sender", "name pic");
+   
+    message = await message.populate("chat");
+    console.log(message);
+    message = await User.populate(message, {
+      path: "chat.users",
+      select: "name pic email",
+    });
 
     const check = await Chat.findByIdAndUpdate(req.body.chatId, { latestMessage: message });
     console.log('check' + check);
